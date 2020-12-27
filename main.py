@@ -4,33 +4,34 @@
 # Ignorar archivos temporales y de peso 0kb
 import os
 import time
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEvent
+TEMP_EXT = ('bc', 'bc!', 'blf', 'cache', 'crdownload', 'download', 'part', 'partial', 'tmp', 'temp')
+IMAGES = ('png', 'jpg', 'gif', 'jpeg')
+PATH = 'C:/Users/Joaquin/Downloads/'
 
 
-def dispatch(event):
-    if event.event_type == 'created':
-        new_file = str(event.src_path).split('\\')[-1]
-        print(f"hey, {new_file} has been created!")
-        # os.rename(f'{event.src_path}', f'{path}/newFiles/{new_file}')
-    if event.event_type == 'modified':
-        print(f"hey buddy, {event.src_path} has been modified")
+def files_found(files, unknowns=False):
+    for f in files:
+        extension = f.split('.')[-1]
+        if extension not in TEMP_EXT:                # Checks if the file's last extension is temporary
+            file_type = 'Unknown file'
+            if extension in IMAGES:
+                os.rename(PATH + f, f'C:/Users/Joaquin/Pictures/{f}')
+                file_type = 'Image'
+            if unknowns or file_type != 'Unknown file':
+                print(f"{file_type} found", end=' - ')
+        else:
+            print(f'El archivo {f} es temporal')
+
+
+def _print_welcome():
+    print('Welcome to the Files Organizer')
+    print(f'Currently checking in {PATH}')
+    print('⬇ The last modifications will appear here ⬇')
 
 
 if __name__ == "__main__":
-    path = 'C:/Users/Joaquin/Downloads'
-    my_event_handler = FileSystemEvent(path)
-
-    my_event_handler.dispatch = dispatch
-
-    go_recursively = True
-    my_observer = Observer()
-    my_observer.schedule(my_event_handler, path, recursive=go_recursively)
-
-    my_observer.start()
-    try:
-        while True:
-            time.sleep(2)
-    except KeyboardInterrupt:
-        my_observer.stop()
-        my_observer.join()
+    _print_welcome()
+    while True:
+        files_found(os.listdir(PATH))
+        time.sleep(5)
+        print("\r-----", end='')
