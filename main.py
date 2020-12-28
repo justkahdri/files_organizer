@@ -1,8 +1,8 @@
 # TODO
-# Reconocer carpetas
-# Reconocer mas formatos de archivos
+# Manage folders
+# Recognise more file extensions
 # FIXME
-# Omitir archivos vacios 0kb
+# Ignore empty files >> 0kb
 from managers import FileManager, PATH
 
 

@@ -2,12 +2,14 @@ import os
 import time
 from threading import Thread
 TEMP_EXT = ('bc', 'bc!', 'blf', 'cache', 'crdownload', 'download', 'part', 'partial', 'tmp', 'temp')
-EXTENSIONS = {'Pictures': ('png', 'jpg', 'gif', 'jpeg', 'ai', 'bmp', 'ico', 'ps', 'psd', 'svg', 'tif', 'tiff', 'webp'),
-              'Videos': ('.3g2', '3gp', 'avi', 'flv', 'h264', 'm4v', 'mkv', 'mov',
-                         'mp4', 'mpg', 'mpeg', 'rm', 'swf', 'vob', 'wmv'),
-              'Music': ('aif', 'cda', 'mid', 'midi', 'mp3', 'mpa', 'ogg', 'wav', 'wma', 'wpl')}
+EXTENSIONS = {
+    'Pictures': ('png', 'jpg', 'gif', 'jpeg', 'ai', 'bmp', 'ico', 'ps', 'psd', 'svg', 'tif', 'tiff', 'webp'),
+    'Videos': ('.3g2', '3gp', 'avi', 'flv', 'h264', 'm4v', 'mkv', 'mov','mp4', 'mpg', 'mpeg', 'rm', 'swf', 'vob', 'wmv'),
+    'Music': ('aif', 'cda', 'mid', 'midi', 'mp3', 'mpa', 'ogg', 'wav', 'wma', 'wpl'),
+    'Documents': ('doc', 'docx', 'pdf', 'odt', 'wpd', 'rtf', 'tex')
+              }
 USER_PATH = os.environ['USERPROFILE']
-PATH = USER_PATH + '/Downloads'
+PATH = USER_PATH + '\\Downloads'
 
 
 def make_counter():
@@ -17,23 +19,30 @@ def make_counter():
     return counter
 
 
-def is_empty(counter):
-    empty = True
-    for k, v in counter.items():
-        if v > 0:
-            print(f"\r{v} {k} file(s) found", end=' ')
-            empty = False
-    return empty
+def print_files_found(counter):
+    not_zero = [k for k in counter.keys() if counter[k] != 0]
+
+    if not_zero:
+        print(f"\r{counter[not_zero[0]]} {not_zero[0]} file(s) found", end='')
+        if len(not_zero) > 1:
+            for i in not_zero[1:-1]:
+                print(f" - {counter[i]} {i} file(s) found", end='')
+            print(f" - {counter[not_zero[-1]]} {not_zero[-1]} file(s) found")
+        else:
+            print()
 
 
 def save_file(f, t, i = 0):
     try:
-        if i != 0:
-            os.rename(f'{PATH}/{f}', f'{USER_PATH}/{t}/{i}{f}')
+        if i == 0:
+            os.rename(f'{PATH}/{f}', f'{USER_PATH}/{t}/automanaged/{f}')
         else:
-            os.rename(f'{PATH}/{f}', f'{USER_PATH}/{t}/{f}')
+            os.rename(f'{PATH}/{f}', f'{USER_PATH}/{t}/automanaged/{i}-{f}')
     except FileExistsError:
-        save_file(f, t, int(i)+1)
+        save_file(f, t, i+1)
+    except FileNotFoundError:
+        os.mkdir(f'{USER_PATH}/{t}/automanaged')
+        save_file(f, t)
 
 
 class FileManager(Thread):
@@ -57,9 +66,7 @@ class FileManager(Thread):
                     if self.unknowns or file_type != 'Unknown file':
                         counter[file_type] += 1
 
-            if not is_empty(counter):
-                print()
-
+            print_files_found(counter)
             time.sleep(5)
 
         print('\r' + "-"*50)
