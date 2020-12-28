@@ -3,7 +3,8 @@ import time
 from threading import Thread
 TEMP_EXT = ('bc', 'bc!', 'blf', 'cache', 'crdownload', 'download', 'part', 'partial', 'tmp', 'temp')
 IMAGES = ('png', 'jpg', 'gif', 'jpeg')
-PATH = 'C:/Users/Joaquin/Downloads/'
+USER_PATH = os.environ['USERPROFILE']
+PATH = USER_PATH + '/Downloads/'
 
 
 class FileManager(Thread):
@@ -21,7 +22,7 @@ class FileManager(Thread):
                 if extension not in TEMP_EXT:  # Checks if the file's last extension is temporary
                     file_type = 'Unknown file'
                     if extension in IMAGES:
-                        os.rename(PATH + f, f'C:/Users/Joaquin/Pictures/{f}')
+                        os.rename(PATH + f, f'{USER_PATH}/Pictures/{f}')
                         file_type = 'Image'
                     if self.unknowns or file_type != 'Unknown file':
                         print(f"{file_type} found", end=' ')
