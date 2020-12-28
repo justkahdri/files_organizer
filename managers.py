@@ -21,9 +21,19 @@ def is_empty(counter):
     empty = True
     for k, v in counter.items():
         if v > 0:
-            print(f"\r{v} {k} files found", end=' ')
+            print(f"\r{v} {k} file(s) found", end=' ')
             empty = False
     return empty
+
+
+def save_file(f, t, i = 0):
+    try:
+        if i != 0:
+            os.rename(f'{PATH}/{f}', f'{USER_PATH}/{t}/{i}{f}')
+        else:
+            os.rename(f'{PATH}/{f}', f'{USER_PATH}/{t}/{f}')
+    except FileExistsError:
+        save_file(f, t, int(i)+1)
 
 
 class FileManager(Thread):
@@ -59,6 +69,6 @@ class FileManager(Thread):
         current_ext = filename.split('.')[-1]
         for file_type, ext in EXTENSIONS.items():
             if current_ext in ext:
-                os.rename(f'{PATH}/{filename}', f'{USER_PATH}/{file_type}/{filename}')
+                save_file(filename, file_type)
                 return file_type
         return 'Unknown file'

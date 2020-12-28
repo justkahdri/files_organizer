@@ -1,8 +1,8 @@
 # TODO
-# Poder detener el programa
-# Omitir archivos vacios 0kb
 # Reconocer carpetas
 # Reconocer mas formatos de archivos
+# FIXME
+# Omitir archivos vacios 0kb
 from managers import FileManager, PATH
 
 
