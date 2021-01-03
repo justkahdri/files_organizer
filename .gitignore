@@ -127,5 +127,4 @@ cython_debug/
 .idea
 
 # Specified for Project
-data/u-paths.csv
-data/u-preferences.json
+data/u-*.*
