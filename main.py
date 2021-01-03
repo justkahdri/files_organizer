@@ -1,15 +1,16 @@
-# TODO
-# Manage folders
-# Recognise more file extensions
-# FIXME
-# Ignore empty files >> 0kb
 from managers import FileManager, PATH
 
 
 def _print_welcome():
     print('Welcome to the Files Organizer')
     print(f'Currently checking in {PATH}')
-    print('⬇ The last modifications will appear here ⬇')
+    print('What would you like to do today?')
+    print('[C]hange observed folder'
+          '[S]elect filetypes to filter'
+          '[G]roup or Ungruop files'
+          '[L]og status'
+          '[Start] Observer')
+
 
 
 if __name__ == "__main__":
@@ -25,11 +26,12 @@ if __name__ == "__main__":
             else:
                 command = input()
 
-            if command == "start":
+            if command.lower() == "start":
+                print('⬇ The last modifications will appear here ⬇')
                 robot = FileManager()
                 robot.start()
 
-            elif command in ["stop", 's']:
+            elif command.lower() in ["stop", 's']:
                 print('Closing...')
                 robot.stop = True
                 robot.join()

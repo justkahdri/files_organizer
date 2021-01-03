@@ -2,12 +2,15 @@ import os
 import time
 from threading import Thread
 TEMP_EXT = ('bc', 'bc!', 'blf', 'cache', 'crdownload', 'download', 'part', 'partial', 'tmp', 'temp')
+# TODO
+# Manage folders
+# Recognise more file extensions
 EXTENSIONS = {
     'Pictures': ('png', 'jpg', 'gif', 'jpeg', 'ai', 'bmp', 'ico', 'ps', 'psd', 'svg', 'tif', 'tiff', 'webp'),
-    'Videos': ('.3g2', '3gp', 'avi', 'flv', 'h264', 'm4v', 'mkv', 'mov','mp4', 'mpg', 'mpeg', 'rm', 'swf', 'vob', 'wmv'),
+    'Videos': ('.3g2', '3gp', 'avi', 'flv', 'h264', 'm4v', 'mkv', 'mov', 'mp4', 'mpg', 'mpeg', 'rm', 'swf', 'vob', 'wmv'),
     'Music': ('aif', 'cda', 'mid', 'midi', 'mp3', 'mpa', 'ogg', 'wav', 'wma', 'wpl'),
     'Documents': ('doc', 'docx', 'pdf', 'odt', 'wpd', 'rtf', 'tex')
-              }
+    }
 USER_PATH = os.environ['USERPROFILE']
 PATH = USER_PATH + '\\Downloads'
 
@@ -32,7 +35,7 @@ def print_files_found(counter):
             print()
 
 
-def save_file(f, t, i = 0):
+def save_file(f, t, i=0):
     try:
         if i == 0:
             os.rename(f'{PATH}/{f}', f'{USER_PATH}/{t}/automanaged/{f}')
@@ -71,6 +74,8 @@ class FileManager(Thread):
 
         print('\r' + "-"*50)
 
+    # FIXME
+    # Ignore empty files >> 0kb
     @staticmethod
     def find_extension(filename):
         current_ext = filename.split('.')[-1]

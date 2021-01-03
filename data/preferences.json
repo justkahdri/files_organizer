@@ -1,0 +1,14 @@
+{
+    "search_path": "\\Downloads",
+    "group_files": {
+      "active": true,
+      "folder": "automanaged"
+    },
+    "extensions": [
+        "Pictures",
+        "Documents",
+        "Videos",
+        "Music"
+    ],
+    "default_folders": true
+}
