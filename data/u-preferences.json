@@ -1,8 +1,8 @@
 {
-    "search_path": "\\Downloads",
+    "search-path": "C:\\Users\\Joaquin\\Downloads",
     "group_files": {
-      "active": true,
-      "folder": "automanaged"
+        "active": true,
+        "folder": "automanaged"
     },
     "extensions": [
         "Pictures",
