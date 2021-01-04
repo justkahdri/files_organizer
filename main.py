@@ -1,6 +1,5 @@
 from managers import FileManager
-import settings
-path = settings.load_preferences()['search-path']
+from settings import *
 
 
 def _print_welcome():
@@ -17,6 +16,9 @@ def _print_welcome():
 
 
 if __name__ == "__main__":
+    if not os.path.exists("data/u-preferences.json"):
+        to_default_values(warn=False)       # Creates u-preferences.json from default_config.json
+    path = load_preferences()['search-path']
     robot = None
     _print_welcome()
 
@@ -27,16 +29,16 @@ if __name__ == "__main__":
         if robot is None:
             if command == 'c':
                 folder = input('Where do you want me to check?: ')
-                settings.change_focus(folder)
+                change_focus(folder)
             elif command == 's':
-                current = settings.load_preferences()['extensions']
+                current = load_preferences()['extensions']
                 print(f'The current extensions are: {current}')
                 chosen = input('What extensions would you want to look for? (Repeat from above): ').title()
-                settings.change_preferences('extensions', chosen.split())
+                filter_extensions(chosen.split())
             elif command == 'g':
-                settings.group_ungroup()
+                group_ungroup()
             elif command == 'l':
-                print(settings.load_preferences())
+                print(load_preferences())
             elif command == 'e':
                 break
             elif command == "start":
