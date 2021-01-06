@@ -5,6 +5,8 @@ TEMP_EXT = ('bc', 'bc!', 'blf', 'cache', 'crdownload', 'download', 'part', 'part
 # TODO
 # Manage folders
 # Recognise more file extensions
+# FIXME
+# Use the new configuration from json
 EXTENSIONS = {
     'Pictures': ('png', 'jpg', 'gif', 'jpeg', 'ai', 'bmp', 'ico', 'ps', 'psd', 'svg', 'tif', 'tiff', 'webp'),
     'Videos': ('.3g2', '3gp', 'avi', 'flv', 'h264', 'm4v', 'mkv', 'mov', 'mp4', 'mpg', 'mpeg', 'rm', 'swf', 'vob', 'wmv'),

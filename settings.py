@@ -1,7 +1,3 @@
-# TODO
-# Save used directories in path.csv
-# Ask user if wants to save the files in a separated folder
-# If thats the case, ask for folders name (automanaged by default)
 import json
 import os
 from shutil import copyfile
