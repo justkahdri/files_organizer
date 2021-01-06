@@ -4,12 +4,17 @@ from settings import *
 
 def _print_welcome():
     print('Welcome to the Files Organizer\n'
-          f'Currently checking in {path}\n'
-          'What would you like to do today?\n'
+          'What would you like to do today?')
+    _print_commands()
+
+
+def _print_commands():
+    print(f'Currently checking in {path}\n'
           '[C]hange observed folder\n'
           '[S]elect filetypes to filter\n'
           '[G]roup or Ungruop files\n'
           '[L]og status\n'
+          '[R]eset preferences\n'
           '[Start] Observer\n'
           '[H]elp --> Prints this message\n'
           '[E]xit program')
@@ -33,12 +38,16 @@ if __name__ == "__main__":
             elif command == 's':
                 current = load_preferences()['extensions']
                 print(f'The current extensions are: {current}')
-                chosen = input('What extensions would you want to look for? (Repeat from above): ').title()
+                chosen = input('What filetypes would you want to look for? (Repeat from above): ').title()
                 filter_extensions(chosen.split())
             elif command == 'g':
                 group_ungroup()
             elif command == 'l':
-                print(load_preferences())
+                log_status()
+            elif command == 'r':
+                reset = confirmation('Are you sure you want to set all preferences to default values? Yes/(No) ')
+                if reset:
+                    to_default_values()
             elif command == 'e':
                 break
             elif command == "start":
@@ -46,7 +55,7 @@ if __name__ == "__main__":
                 robot = FileManager()
                 robot.start()
             elif command in ['help', 'h']:
-                _print_welcome()
+                _print_commands()
             else:
                 print('Unknown command, try again')
 
