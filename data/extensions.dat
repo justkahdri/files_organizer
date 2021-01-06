@@ -1,0 +1,7 @@
+{
+'Temporal': ('bc', 'bc!', 'blf', 'cache', 'crdownload', 'download', 'part', 'partial', 'tmp', 'temp'),
+'Pictures': ('png', 'jpg', 'gif', 'jpeg', 'ai', 'bmp', 'ico', 'ps', 'psd', 'svg', 'tif', 'tiff', 'webp'),
+'Videos': ('3g2', '3gp', 'avi', 'flv', 'h264', 'm4v', 'mkv', 'mov', 'mp4', 'mpg', 'mpeg', 'rm', 'swf', 'vob', 'wmv'),
+'Music': ('aif', 'cda', 'mid', 'midi', 'mp3', 'mpa', 'ogg', 'wav', 'wma', 'wpl'),
+'Documents': ('doc', 'docx', 'pdf', 'odt', 'wpd', 'rtf', 'tex')
+}
