@@ -1,5 +1,8 @@
 from managers import FileManager
 from settings import *
+# TODO
+# Manage folders
+# Recognise more file extensions
 
 
 def _print_welcome():
@@ -18,6 +21,7 @@ def _print_commands():
           '[Start] Observer\n'
           '[H]elp --> Prints this message\n'
           '[E]xit program')
+    print('-'*50)
 
 
 if __name__ == "__main__":
@@ -52,7 +56,7 @@ if __name__ == "__main__":
                 break
             elif command == "start":
                 print('⬇ The last modifications will appear here ⬇')
-                robot = FileManager()
+                robot = FileManager(load_preferences())
                 robot.start()
             elif command in ['help', 'h']:
                 _print_commands()
