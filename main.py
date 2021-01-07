@@ -1,6 +1,6 @@
 from managers import FileManager
 from settings import *
-
+from tray import show_tray
 
 def _print_welcome():
     print('Welcome to the Files Organizer\n'

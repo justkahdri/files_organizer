@@ -1,6 +1,6 @@
 {
     "search-path": "",
-    "group_files": {
+    "group-files": {
         "active": true,
         "folder": "automanaged"
     },
@@ -10,5 +10,5 @@
         "Videos",
         "Music"
     ],
-    "default_folders": true
+    "default-folders": true
 }
