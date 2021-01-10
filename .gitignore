@@ -129,3 +129,4 @@ cython_debug/
 # Specified for Project
 data/u-*.*
 icons
+GUI/*.ui
