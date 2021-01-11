@@ -1,9 +1,6 @@
 from managers import FileManager
 from settings import *
-# TODO
-# Manage folders
-# Recognise more file extensions
-
+from tray import *
 
 def _print_welcome():
     print('Welcome to the Files Organizer\n'
@@ -22,7 +19,6 @@ def _print_commands():
           '[H]elp --> Prints this message\n'
           '[E]xit program')
     print('-'*50)
-
 
 if __name__ == "__main__":
     if not os.path.exists("data/u-preferences.json"):
@@ -58,6 +54,7 @@ if __name__ == "__main__":
                 print('⬇ The last modifications will appear here ⬇')
                 robot = FileManager(load_preferences())
                 robot.start()
+                start_tray()
             elif command in ['help', 'h']:
                 _print_commands()
             else:
