@@ -1,8 +1,11 @@
 import sys
-import webbrowser
+import asyncio
 
-from mainwin_ui import *
-from settings import load_preferences
+from GUI.mainwin_ui import *
+from GUI.tray import SystemTrayIcon
+from managers.file_manager import FileManager
+from managers.settings import load_preferences
+from webbrowser import open as navigate
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -10,9 +13,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setupUi(self)
+        self.robot = None
+        self.tray_icon = SystemTrayIcon(QtGui.QIcon("icons/Logo.png"), self)
+
         # Connections & Events
-        self.startButton.clicked.connect(self.start_observer)
-        self.stopButton.clicked.connect(self.stop_observer)
+        self.startButton.clicked.connect(lambda: self.start_observer())
+        self.stopButton.clicked.connect(lambda: self.stop_observer())
         self.checkGroup.stateChanged.connect(self.group_ungroup)
         self.restoreButton.clicked.connect(lambda: self.display_info(True))
         self.saveButton.clicked.connect(self.save_changes)
@@ -26,21 +32,32 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Placeholders
         self.consoleLog.setText('The last modifications will appear here')
 
-    def start_observer(self):
-        self.startButton.setEnabled(False)
-        self.stopButton.setEnabled(True)
-        self.settingsBox.setEnabled(False)
-        self.programStatus.setText('The program is running!')
-        self.programStatus.setStyleSheet("QLabel { color : green; }")
-        # TODO Sent signal to managers.py
+    def stop_observer(self, main_window=True):
+        # if main_window:
+        #     self.stopButton.setEnabled(False)
+        #     self.programStatus.setText('Closing...')
+        #     self.programStatus.setStyleSheet("QLabel { color: red; }")
+        self.robot.stop = True
+        self.robot.join(0.1)
+        self.robot = None
+        if main_window:
+            self.startButton.setEnabled(True)
+            self.settingsBox.setEnabled(True)
+            self.programStatus.setText('The program is off.')
+            self.programStatus.setStyleSheet("QLabel {}")
 
-    def stop_observer(self):
-        self.stopButton.setEnabled(False)
-        self.startButton.setEnabled(True)
-        self.settingsBox.setEnabled(True)
-        self.programStatus.setText('The program is off.')
-        self.programStatus.setStyleSheet("QLabel {}")
-        # TODO Sent signal to managers.py
+    def start_observer(self, main_window=True):
+        if main_window:
+            self.startButton.setEnabled(False)
+            self.stopButton.setEnabled(True)
+            self.settingsBox.setEnabled(False)
+            self.programStatus.setText('The program is running!')
+            self.programStatus.setStyleSheet("QLabel { color : green; }")
+
+        self.consoleLog.setText('⬇ The last modifications will appear here ⬇')
+        self.consoleLog.setStyleSheet("QLabel {}")
+        self.robot = FileManager(load_preferences())
+        self.robot.start()
 
     def group_ungroup(self, checked):
         self.foldername_group.setEnabled(checked)
@@ -62,8 +79,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.consoleLog.setText('Preferences restored succesfully.')
             self.consoleLog.setStyleSheet("QLabel { color : darkblue; }")
 
-    def open_browser(self, path: str):
-        webbrowser.open(path, new=2)
+    @staticmethod
+    def open_browser(path: str):
+        navigate(path, new=2)
+
+    def closeEvent(self, event):
+        if self.actionMinimize.isChecked():
+            event.ignore()
+            self.hide()
+            self.tray_icon.start()
+        else:
+            self.tray_icon.close()
 
 
 if __name__ == "__main__":
