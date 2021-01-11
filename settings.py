@@ -73,7 +73,7 @@ def filter_extensions(new_values: list):
 
 
 def load_preferences():
-    with open('data/u-preferences.json') as f:
+    with open('../data/u-preferences.json') as f:
         data = json.load(f)
         return data
 
