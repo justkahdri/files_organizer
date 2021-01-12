@@ -5,10 +5,10 @@
         "folder": "automanaged"
     },
     "extensions": [
+        "Music",
         "Pictures",
-        "Documents",
         "Videos",
-        "Music"
+        "Documents"
     ],
     "default-folders": true
 }

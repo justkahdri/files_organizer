@@ -213,8 +213,11 @@ class Ui_MainWindow(object):
         self.actionMinimize.setCheckable(True)
         self.actionMinimize.setChecked(True)
         self.actionMinimize.setObjectName("actionMinimize")
+        self.actionRestore_settings = QtWidgets.QAction(MainWindow)
+        self.actionRestore_settings.setObjectName("actionRestore_settings")
         self.menuPreferences.addAction(self.actionImport)
         self.menuPreferences.addAction(self.actionSaveAs)
+        self.menuPreferences.addAction(self.actionRestore_settings)
         self.menuPreferences.addSeparator()
         self.menuPreferences.addAction(self.actionMinimize)
         self.menuHelp.addAction(self.actionOpen_route_folder)
@@ -263,6 +266,7 @@ class Ui_MainWindow(object):
         self.actionOpen_route_folder.setText(_translate("MainWindow", "Open route folder"))
         self.actionReport_bug.setText(_translate("MainWindow", "Report a bug"))
         self.actionMinimize.setText(_translate("MainWindow", "Minimize to Tray"))
+        self.actionRestore_settings.setText(_translate("MainWindow", "Restore settings"))
 import resources_rc
 
 

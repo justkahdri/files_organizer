@@ -1,8 +1,11 @@
+from webbrowser import open as navigate
+
 from GUI.mainwin_ui import *
 from GUI.tray import SystemTrayIcon
+from GUI.restore_alert import RestoreAlert
+
 from managers.file_manager import FileManager
 import managers.settings as stg
-from webbrowser import open as navigate
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -17,8 +20,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.startButton.clicked.connect(lambda: self.start_observer())
         self.stopButton.clicked.connect(lambda: self.stop_observer())
         self.checkGroup.stateChanged.connect(lambda x: self.foldername_group.setEnabled(x))
-        self.restoreButton.clicked.connect(lambda: self.display_info(True))
+        self.restoreButton.clicked.connect(lambda: self.display_info())
         self.saveButton.clicked.connect(self.save_changes)
+        self.actionRestore_settings.triggered.connect(lambda: restore_alert.show())
         self.actionOpen_route_folder.triggered.connect(lambda: self.open_browser(self.pathroute.text()))
         self.actionReport_bug.triggered.connect(
             lambda: self.open_browser(r"https://github.com/justkahdri/files_organizer/issues/new"))
@@ -27,7 +31,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.display_info()
 
         # Placeholders
-        self.console_placeholder.setText('The last modifications will appear here')
+        self.console_placeholder.close()
 
     def stop_observer(self, main_window=True):
         # if main_window:
@@ -41,8 +45,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.startButton.setEnabled(True)
             self.settingsBox.setEnabled(True)
             self.programStatus.setText('The program is off.')
-            self.programStatus.setStyleSheet("QLabel {}")
-            self.print_console('-'*50)
 
     def start_observer(self, main_window=True):
         if main_window:
@@ -56,25 +58,44 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.robot = FileManager(stg.load_preferences())
         self.robot.start()
 
-    def save_changes(self):
-        stg.change_focus(self.pathroute.text())
-        stg.group_ungroup(self.checkGroup.isChecked(), self.foldername_group.text())
+    def compare_saved_settings(self):
         extensions = [i for i in self.settingsBox.children()
                       if isinstance(i, QtWidgets.QCheckBox) and i is not self.checkGroup]
         active_extensions = [e.text() for e in extensions if e.isChecked()]
-        stg.filter_extensions(active_extensions)
-        self.print_console('New preferences saved!', "QLabel { color : green; }")
+        current_values = {
+            'search-path': self.pathroute.text(),
+            'group-files': {
+                'active': self.checkGroup.isChecked(),
+                'folder': self.foldername_group.text()
+            },
+            'extensions': active_extensions,
+            'default-folders': True
+        }
+        if current_values == stg.load_preferences():
+            return False
+        else:
+            return current_values
 
-    def display_info(self, restore=False):
-        info = stg.load_preferences()
-        self.pathroute.setText(info['search-path'])
-        self.foldername_group.setText(info['group-files']['folder'])
-        for i in self.settingsBox.children():
-            if isinstance(i, QtWidgets.QCheckBox):
-                if i.text() in info['extensions'] or (i is self.checkGroup and info['group-files']['active']):
-                    i.setChecked(True)
-        if restore:
-            self.print_console('Preferences restored succesfully.', "QLabel { color : darkblue; }")
+    def save_changes(self):
+        changes = self.compare_saved_settings()
+        if changes:
+            stg.save_to_json(changes)
+            self.print_console('New preferences saved!', "QLabel { color : green; }")
+        else:
+            self.print_console('Make some changes before saving into settings.', "QLabel { color : orange; }")
+
+    def display_info(self):
+        changes = self.compare_saved_settings()
+        if not changes:
+            self.print_console('Preferences not changed.', "QLabel { color : orange; }")
+        else:
+            info = stg.load_preferences()
+            self.pathroute.setText(info['search-path'])
+            self.foldername_group.setText(info['group-files']['folder'])
+            for i in self.settingsBox.children():
+                if isinstance(i, QtWidgets.QCheckBox):
+                    if i.text() in info['extensions'] or (i is self.checkGroup and info['group-files']['active']):
+                        i.setChecked(True)
 
     def print_console(self, text: str, style=None):
         label = QtWidgets.QLabel()
@@ -103,5 +124,6 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
+    restore_alert = RestoreAlert(parent=window)
     window.show()
     app.exec_()

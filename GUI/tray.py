@@ -5,13 +5,12 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
     def __init__(self, icon, parent=None):
         QtWidgets.QSystemTrayIcon.__init__(self, icon, parent)
-        self.setToolTip('Tremendo organizador de Archivos')
+        self.setToolTip('File Organizer 2.0')
         menu = QtWidgets.QMenu(parent)
         self.parent = parent
 
         open_folder = menu.addAction('Open route folder')
-        # FIXME
-        open_folder.triggered.connect(self.parent.open_browser)
+        # FIXME open_folder.triggered.connect(self.parent.open_browser)
         open_folder.setIcon(QtGui.QIcon("icons/blue-folder-smiley.png"))
 
         resume = menu.addAction("Start")

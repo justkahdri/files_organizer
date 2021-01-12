@@ -1,7 +1,6 @@
 import json
 import os
 from shutil import copyfile
-# TODO check if input values are the same that in the json
 
 
 def save_paths(value):
@@ -22,38 +21,26 @@ def change_focus(new_route):
     with open('../data/u-preferences.json', 'r+') as f:
         data = json.load(f)
 
-        data['search-path'] = new_route  # <--- modify `field` value.
+        data['search-path'] = new_route
         f.seek(0)  # <--- should reset file position to the beginning.
         json.dump(data, f, indent=4)
         f.truncate()  # remove remaining part
-
-
-def group_ungroup(active, foldername):
-    with open('../data/u-preferences.json', 'r+') as f:
-        data = json.load(f)
-        if data['group-files']['active'] == active and data['group-files']['folder'] == foldername:
-            return True
-        data['group-files']['active'] = active
-        data['group-files']['folder'] = foldername
-
-        f.seek(0)
-        json.dump(data, f, indent=4)
-        f.truncate()
-
-
-def filter_extensions(new_values: list):
-    with open('../data/u-preferences.json', 'r+') as f:
-        data = json.load(f)
-        data['extensions'] = new_values
-        f.seek(0)
-        json.dump(data, f, indent=4)
-        f.truncate()
 
 
 def load_preferences():
     with open('../data/u-preferences.json') as f:
         data = json.load(f)
         return data
+
+
+def save_to_json(new_values: dict):
+    save_paths(new_values['search-path'])
+    with open('../data/u-preferences.json', 'r+') as f:
+        data = json.load(f)
+        final = {k: new_values.get(k, 0) or data.get(k, 0) for k in set(data)}
+        f.seek(0)
+        json.dump(final, f, indent=4)
+        f.truncate()
 
 
 def to_default_values():
