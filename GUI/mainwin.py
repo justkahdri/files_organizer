@@ -1,10 +1,7 @@
-import sys
-import asyncio
-
 from GUI.mainwin_ui import *
 from GUI.tray import SystemTrayIcon
 from managers.file_manager import FileManager
-from managers.settings import load_preferences
+import managers.settings as stg
 from webbrowser import open as navigate
 
 
@@ -19,7 +16,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Connections & Events
         self.startButton.clicked.connect(lambda: self.start_observer())
         self.stopButton.clicked.connect(lambda: self.stop_observer())
-        self.checkGroup.stateChanged.connect(self.group_ungroup)
+        self.checkGroup.stateChanged.connect(lambda x: self.foldername_group.setEnabled(x))
         self.restoreButton.clicked.connect(lambda: self.display_info(True))
         self.saveButton.clicked.connect(self.save_changes)
         self.actionOpen_route_folder.triggered.connect(lambda: self.open_browser(self.pathroute.text()))
@@ -30,7 +27,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.display_info()
 
         # Placeholders
-        self.consoleLog.setText('The last modifications will appear here')
+        self.console_placeholder.setText('The last modifications will appear here')
 
     def stop_observer(self, main_window=True):
         # if main_window:
@@ -45,6 +42,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.settingsBox.setEnabled(True)
             self.programStatus.setText('The program is off.')
             self.programStatus.setStyleSheet("QLabel {}")
+            self.print_console('-'*50)
 
     def start_observer(self, main_window=True):
         if main_window:
@@ -53,22 +51,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.settingsBox.setEnabled(False)
             self.programStatus.setText('The program is running!')
             self.programStatus.setStyleSheet("QLabel { color : green; }")
+            self.print_console('⬇ The last modifications will appear here ⬇')
 
-        self.consoleLog.setText('⬇ The last modifications will appear here ⬇')
-        self.consoleLog.setStyleSheet("QLabel {}")
-        self.robot = FileManager(load_preferences())
+        self.robot = FileManager(stg.load_preferences())
         self.robot.start()
 
-    def group_ungroup(self, checked):
-        self.foldername_group.setEnabled(checked)
-
     def save_changes(self):
-        self.consoleLog.setText('New preferences saved!')
-        self.consoleLog.setStyleSheet("QLabel { color : green; }")
-        # TODO Save to json & check if there are any changes
+        stg.change_focus(self.pathroute.text())
+        stg.group_ungroup(self.checkGroup.isChecked(), self.foldername_group.text())
+        extensions = [i for i in self.settingsBox.children()
+                      if isinstance(i, QtWidgets.QCheckBox) and i is not self.checkGroup]
+        active_extensions = [e.text() for e in extensions if e.isChecked()]
+        stg.filter_extensions(active_extensions)
+        self.print_console('New preferences saved!', "QLabel { color : green; }")
 
     def display_info(self, restore=False):
-        info = load_preferences()
+        info = stg.load_preferences()
         self.pathroute.setText(info['search-path'])
         self.foldername_group.setText(info['group-files']['folder'])
         for i in self.settingsBox.children():
@@ -76,8 +74,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 if i.text() in info['extensions'] or (i is self.checkGroup and info['group-files']['active']):
                     i.setChecked(True)
         if restore:
-            self.consoleLog.setText('Preferences restored succesfully.')
-            self.consoleLog.setStyleSheet("QLabel { color : darkblue; }")
+            self.print_console('Preferences restored succesfully.', "QLabel { color : darkblue; }")
+
+    def print_console(self, text: str, style=None):
+        label = QtWidgets.QLabel()
+        label.setText(text)
+        if style:
+            label.setStyleSheet(style)
+        self.verticalLayout.addStretch()
+        self.verticalLayout.insertWidget(self.verticalLayout.count() - 1, label)
+        # FIXME self.consoleScroll.ensureVisible(0, self.consoleScroll.height(), 0, 0)
 
     @staticmethod
     def open_browser(path: str):
@@ -93,6 +99,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 if __name__ == "__main__":
+    import sys
+
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     window.show()

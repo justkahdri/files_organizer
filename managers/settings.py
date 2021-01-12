@@ -1,17 +1,7 @@
 import json
 import os
 from shutil import copyfile
-
-
-def confirmation(string):
-    while True:
-        entry = input(string).lower()
-        if not entry or entry in ['no', 'n']:
-            return False
-        elif entry in ['yes', 'y']:
-            return True
-        else:
-            print('Unkown command, please try again')
+# TODO check if input values are the same that in the json
 
 
 def save_paths(value):
@@ -27,38 +17,28 @@ def save_paths(value):
             data.write(value + "\n")
 
 
-def change_focus(folder, warn=True):
+def change_focus(new_route):
+    save_paths(new_route)
     with open('../data/u-preferences.json', 'r+') as f:
         data = json.load(f)
-        root = os.environ['USERPROFILE']
-        new_route = root + f'\\{folder}'
-        save_paths(new_route)
 
         data['search-path'] = new_route  # <--- modify `field` value.
         f.seek(0)  # <--- should reset file position to the beginning.
         json.dump(data, f, indent=4)
         f.truncate()  # remove remaining part
 
-    if warn:
-        print(f'Now checking in {new_route}')
 
-
-def group_ungroup():
+def group_ungroup(active, foldername):
     with open('../data/u-preferences.json', 'r+') as f:
         data = json.load(f)
-        data['group-files']['active'] = not data['group-files']['active']
-
-        if data['group-files']['active']:
-            change_folder = confirmation("Do you want to change the folder's name? Yes/(No) ")
-            if change_folder:
-                new_folder = input('Type the new name: ')
-                data['group-files']['folder'] = new_folder
+        if data['group-files']['active'] == active and data['group-files']['folder'] == foldername:
+            return True
+        data['group-files']['active'] = active
+        data['group-files']['folder'] = foldername
 
         f.seek(0)
         json.dump(data, f, indent=4)
         f.truncate()
-
-    print("The file's groups are now " + ('enabled' if data['group-files']['active'] else 'disabled'))
 
 
 def filter_extensions(new_values: list):
@@ -69,8 +49,6 @@ def filter_extensions(new_values: list):
         json.dump(data, f, indent=4)
         f.truncate()
 
-    print('Extensions updated')
-
 
 def load_preferences():
     with open('../data/u-preferences.json') as f:
@@ -78,18 +56,6 @@ def load_preferences():
         return data
 
 
-def log_status():
-    data = load_preferences()
-    print(f"Currently checking {data['search-path']}")
-    if data["group-files"]["active"]:
-        print(f'Files will be grouped in "{data["group-files"]["folder"]}" folder')
-    else:
-        print('Grouping files is disabled')
-    print(f'Looking for the following filetypes: {", ".join(data["extensions"])}')
-
-
-def to_default_values(warn=True):
+def to_default_values():
     copyfile('../data/default_config.json', '../data/u-preferences.json')
-    change_focus('Downloads', warn=False)
-    if warn:
-        print('Preferences set to default')
+    change_focus(f'{os.environ["USERPROFILE"]}\\Downloads')
