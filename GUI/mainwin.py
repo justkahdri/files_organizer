@@ -1,5 +1,6 @@
 from webbrowser import open as navigate
 import os.path
+import sys
 
 from GUI.mainwin_ui import *
 from GUI.tray import SystemTrayIcon
@@ -35,37 +36,36 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.display_info()
 
         # Placeholders
-        self.console_placeholder.close()
+        # self.console_placeholder.close()
 
-    def start_observer(self, main_window=True):
+    def start_observer(self):
         if self.compare_saved_settings():
             self.print_console('You have changes without saving!', 'QLabel { color : darkred; }')
             return False
-        if main_window:
-            self.startButton.setEnabled(False)
-            self.stopButton.setEnabled(True)
-            self.settingsBox.setEnabled(False)
-            self.programStatus.setText('The program is running!')
-            self.programStatus.setStyleSheet("QLabel { color : green; }")
-            self.print_console('⬇ The last modifications will appear here ⬇')
 
-        self.robot = FileManager(stg.load_preferences(), self, lambda x: self.print_console(x, 'QLabel { color : darkred; }'))
+        self.startButton.setEnabled(False)
+        self.stopButton.setEnabled(True)
+        self.settingsBox.setEnabled(False)
+        self.programStatus.setText('The program is running!')
+        self.programStatus.setStyleSheet("QLabel { color : green; }")
+        self.print_console('⬇ The last modifications will appear here ⬇')
+
+        self.robot = FileManager(stg.load_preferences(), self)
         self.robot.start()
 
-    def stop_observer(self, main_window=True):
-        # if main_window:
-        #     self.stopButton.setEnabled(False)
-        #     self.programStatus.setText('Closing...')
-        #     self.programStatus.setStyleSheet("QLabel { color: red; }")
+    def stop_observer(self):
+        # self.stopButton.setEnabled(False)
+        # self.programStatus.setText('Closing...')
+        # self.programStatus.setStyleSheet("QLabel { color: red; }")
         self.robot.stop = True
         self.robot.join(0.1)
         self.robot = None
-        if main_window:
-            self.startButton.setEnabled(True)
-            self.stopButton.setEnabled(False)
-            self.settingsBox.setEnabled(True)
-            self.programStatus.setText('The program is off.')
-            self.programStatus.setStyleSheet("QLabel {}")
+
+        self.startButton.setEnabled(True)
+        self.stopButton.setEnabled(False)
+        self.settingsBox.setEnabled(True)
+        self.programStatus.setText('The program is off.')
+        self.programStatus.setStyleSheet("QLabel {}")
 
     def compare_saved_settings(self):
         extensions = [i for i in self.settingsBox.children()
@@ -114,13 +114,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
         self.pathroute.setText(str(folder))
 
+    def files_found(self, counter):
+        not_zero = [k for k in counter.keys() if counter[k] != 0]
+
+        if not_zero:
+            line = f"{counter[not_zero[0]]} {not_zero[0]} file(s) found"
+            if len(not_zero) > 1:
+                for i in not_zero[1:]:
+                    line += f" - {counter[i]} {i} file(s) found"
+            label = QtWidgets.QLabel()
+            label.setText(line)
+
+            self.verticalLayout.addWidget(label)
+
     def print_console(self, text: str, style=None):
         label = QtWidgets.QLabel()
         label.setText(text)
         if style:
             label.setStyleSheet(style)
-        self.verticalLayout.addStretch()
-        self.verticalLayout.insertWidget(self.verticalLayout.count() - 1, label)
+        self.verticalLayout.addWidget(label)
+        # self.verticalLayout.addStretch()
+        # self.verticalLayout.insertWidget(self.verticalLayout.count() - 1, label)
         # FIXME self.consoleScroll.ensureVisible(0, self.consoleScroll.height(), 0, 0)
 
     @staticmethod
@@ -133,12 +147,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.hide()
             self.tray_icon.start()
         else:
-            self.tray_icon.close()
+            sys.exit()
 
 
 if __name__ == "__main__":
-    import sys
-
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     restore_alert = RestoreAlert(parent=window)
