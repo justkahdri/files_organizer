@@ -10,7 +10,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.parent = parent
 
         open_folder = menu.addAction('Open route folder')
-        # FIXME open_folder.triggered.connect(self.parent.open_browser)
+        # FIXME open_folder.triggered.connect(lambda: self.parent.open_browser(self.parent.pathroute.text()))
         open_folder.setIcon(QtGui.QIcon("icons/blue-folder-smiley.png"))
 
         resume = menu.addAction("Start")
@@ -27,6 +27,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
         open_app = menu.addAction("Open App")
         open_app.triggered.connect(self.parent.show)
+        # TODO close
 
         exit_ = menu.addAction("Exit")
         exit_.triggered.connect(lambda: sys.exit())

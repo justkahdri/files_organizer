@@ -1,4 +1,5 @@
 from webbrowser import open as navigate
+import os.path
 
 from GUI.mainwin_ui import *
 from GUI.tray import SystemTrayIcon
@@ -22,6 +23,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkGroup.stateChanged.connect(lambda x: self.foldername_group.setEnabled(x))
         self.restoreButton.clicked.connect(lambda: self.display_info())
         self.saveButton.clicked.connect(self.save_changes)
+        self.browser_searchPath.clicked.connect(self.pass_path)
+
+        # MenuBar Actions
         self.actionRestore_settings.triggered.connect(lambda: restore_alert.show())
         self.actionOpen_route_folder.triggered.connect(lambda: self.open_browser(self.pathroute.text()))
         self.actionReport_bug.triggered.connect(
@@ -33,6 +37,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Placeholders
         self.console_placeholder.close()
 
+    def start_observer(self, main_window=True):
+        if self.compare_saved_settings():
+            self.print_console('You have changes without saving!', 'QLabel { color : darkred; }')
+            return False
+        if main_window:
+            self.startButton.setEnabled(False)
+            self.stopButton.setEnabled(True)
+            self.settingsBox.setEnabled(False)
+            self.programStatus.setText('The program is running!')
+            self.programStatus.setStyleSheet("QLabel { color : green; }")
+            self.print_console('⬇ The last modifications will appear here ⬇')
+
+        self.robot = FileManager(stg.load_preferences(), self, lambda x: self.print_console(x, 'QLabel { color : darkred; }'))
+        self.robot.start()
+
     def stop_observer(self, main_window=True):
         # if main_window:
         #     self.stopButton.setEnabled(False)
@@ -43,20 +62,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.robot = None
         if main_window:
             self.startButton.setEnabled(True)
+            self.stopButton.setEnabled(False)
             self.settingsBox.setEnabled(True)
             self.programStatus.setText('The program is off.')
-
-    def start_observer(self, main_window=True):
-        if main_window:
-            self.startButton.setEnabled(False)
-            self.stopButton.setEnabled(True)
-            self.settingsBox.setEnabled(False)
-            self.programStatus.setText('The program is running!')
-            self.programStatus.setStyleSheet("QLabel { color : green; }")
-            self.print_console('⬇ The last modifications will appear here ⬇')
-
-        self.robot = FileManager(stg.load_preferences())
-        self.robot.start()
+            self.programStatus.setStyleSheet("QLabel {}")
 
     def compare_saved_settings(self):
         extensions = [i for i in self.settingsBox.children()
@@ -77,6 +86,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return current_values
 
     def save_changes(self):
+        if not os.path.isdir(self.pathroute.text()):
+            self.print_console('Path does not exists')
+            # TODO add foldername check
+            return False
         changes = self.compare_saved_settings()
         if changes:
             stg.save_to_json(changes)
@@ -96,6 +109,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 if isinstance(i, QtWidgets.QCheckBox):
                     if i.text() in info['extensions'] or (i is self.checkGroup and info['group-files']['active']):
                         i.setChecked(True)
+
+    def pass_path(self):
+        folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
+        self.pathroute.setText(str(folder))
 
     def print_console(self, text: str, style=None):
         label = QtWidgets.QLabel()
