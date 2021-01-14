@@ -11,7 +11,7 @@ def save_paths(value):
         cloned = value in saved_paths
         f.close()
 
-    if not cloned:
+    if not cloned and value:
         with open('../data/u-paths.dat', 'a') as data:
             data.write(value + "\n")
 
@@ -28,16 +28,28 @@ def change_focus(new_route):
 
 
 def load_preferences():
-    with open('../data/u-preferences.json') as f:
+    try:
+        with open('../data/u-preferences.json') as f:
+            data = json.load(f)
+            return data
+    except FileNotFoundError:
+        to_default_values()
+
+
+def enable_disable_tray(boolean):
+    with open('../data/u-preferences.json', 'r+') as f:
         data = json.load(f)
-        return data
+        data['system-tray'] = boolean
+        f.seek(0)
+        json.dump(data, f, indent=4)
+        f.truncate()
 
 
 def save_to_json(new_values: dict):
-    save_paths(new_values['search-path'])
+    save_paths(new_values.get('search-path'))
     with open('../data/u-preferences.json', 'r+') as f:
         data = json.load(f)
-        final = {k: new_values.get(k, 0) or data.get(k, 0) for k in set(data)}
+        final = {k: new_values.get(k) or data.get(k) for k in set(data)}
         f.seek(0)
         json.dump(final, f, indent=4)
         f.truncate()

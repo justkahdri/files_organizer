@@ -1,15 +1,15 @@
 {
-    "search-path": "",
-    "group-files": {
-        "active": true,
-        "folder": "automanaged"
-    },
     "extensions": [
         "Music",
         "Pictures",
         "Videos",
         "Documents"
     ],
+    "search-path": "",
+    "group-files": {
+        "active": true,
+        "folder": "automanaged"
+    },
     "default-folders": true,
-    "system-tray": true
+    "system-tray": false
 }

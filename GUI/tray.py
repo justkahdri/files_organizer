@@ -8,26 +8,24 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         QtWidgets.QSystemTrayIcon.__init__(self, icon, parent)
         self.setToolTip('File Organizer 2.0')
         self.menu = QtWidgets.QMenu(parent)
+        self.setContextMenu(self.menu)
+        self.activated.connect(self.onTrayIconActivated)
         self.parent = parent
 
         self.open_folder = self.menu.addAction('Open route folder')
-        # FIXME self.open_folder.triggered.connect(lambda: self.parent.open_browser(self.parent.pathroute.text()))
+        self.open_folder.triggered.connect(lambda: self.parent.open_browser(self.parent.pathroute.text()))
         self.open_folder.setIcon(QtGui.QIcon("icons/blue-folder-smiley.png"))
 
-        # FIXME Save start & stop from mainwin
         self.resume = self.menu.addAction("Start")
-        self.resume.triggered.connect(lambda: self.change_observer(True))
+        self.resume.triggered.connect(lambda: self.parent.start_observer())
         self.resume.setIcon(QtGui.QIcon("icons/control.png"))
 
         self.pause = self.menu.addAction("Stop")
         self.pause.setEnabled(False)
-        self.pause.triggered.connect(lambda: self.change_observer(False))
+        self.pause.triggered.connect(lambda: self.parent.stop_observer())
         self.pause.setIcon(QtGui.QIcon("icons/control-stop-square.png"))
 
         self.menu.addSeparator()
-        self.setContextMenu(self.menu)
-        self.activated.connect(self.onTrayIconActivated)
-
         self.open_app = self.menu.addAction("Open App")
         self.open_app.triggered.connect(self.close_tray)
 
@@ -37,15 +35,13 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
     def start(self):
         self.show()
-        # self.showMessage('Files Organizer 2', 'Running in the background')
+        self.showMessage('Files Organizer 2', 'Running in the background')
 
-    def change_observer(self, start):
+    def enable_disable(self, start):
         if start:
-            self.parent.start_observer()
             self.resume.setEnabled(False)
             self.pause.setEnabled(True)
         else:
-            self.parent.stop_observer()
             self.resume.setEnabled(True)
             self.pause.setEnabled(False)
 
@@ -59,11 +55,11 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
 
 if __name__ == '__main__':
-    import sys
+    from sys import argv
 
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication(argv)
     window = QtWidgets.QMainWindow()
     app.setQuitOnLastWindowClosed(False)
     tray_icon = SystemTrayIcon(QtGui.QIcon("icons/Logo.png"), window)
     tray_icon.start()
-    sys.exit(app.exec_())
+    app.exec_()

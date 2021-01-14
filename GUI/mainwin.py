@@ -1,6 +1,7 @@
 from webbrowser import open as navigate
 import os.path
 from sys import argv
+from functools import partial
 
 from GUI.mainwin_ui import *
 from GUI.tray import SystemTrayIcon
@@ -16,7 +17,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setupUi(self)
         self.robot = None
-        self.tray_icon = SystemTrayIcon(QtGui.QIcon("icons/Logo.png"), self)
+        self.setWindowIcon(QtGui.QIcon("icons/Logo.png"))
+        self.tray_icon = SystemTrayIcon(self.windowIcon(), self)
 
         # Connections & Events
         self.startButton.clicked.connect(lambda: self.start_observer())
@@ -27,6 +29,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.browser_searchPath.clicked.connect(self.pass_path)
 
         # MenuBar Actions
+        self.actionMinimize.toggled.connect(stg.enable_disable_tray)
         self.actionRestore_settings.triggered.connect(lambda: restore_alert(self))
         self.actionOpen_route_folder.triggered.connect(lambda: self.open_browser(self.pathroute.text()))
         self.actionReport_bug.triggered.connect(
@@ -46,6 +49,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.startButton.setEnabled(False)
         self.stopButton.setEnabled(True)
         self.settingsBox.setEnabled(False)
+        self.tray_icon.enable_disable(start=True)
         self.programStatus.setText('The program is running!')
         self.programStatus.setStyleSheet("QLabel { color : green; }")
         self.print_console('⬇ The last modifications will appear here ⬇')
@@ -66,6 +70,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settingsBox.setEnabled(True)
         self.programStatus.setText('The program is off.')
         self.programStatus.setStyleSheet("QLabel {}")
+        self.tray_icon.enable_disable(start=False)
 
     def compare_saved_settings(self):
         extensions = [i for i in self.settingsBox.children()
@@ -78,7 +83,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 'folder': self.foldername_group.text()
             },
             'extensions': active_extensions,
-            'default-folders': True
+            'default-folders': True,
+            'system-tray': self.actionMinimize.isChecked()
         }
         if current_values == stg.load_preferences():
             return False
@@ -87,15 +93,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def save_changes(self):
         if not os.path.isdir(self.pathroute.text()):
-            self.print_console('Path does not exists')
-            # TODO add foldername check
-            return False
-        changes = self.compare_saved_settings()
-        if changes:
-            stg.save_to_json(changes)
-            self.print_console('New preferences saved!', "QLabel { color : green; }")
+            self.print_console('Path does not exists', 'QLabel { color : orange; }')
+        elif [c for c in self.foldername_group.text()
+              if c in ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '.']]:
+            self.print_console(f'Invalid folder name: "{self.foldername_group.text()}"', 'QLabel { color : orange; }')
         else:
-            self.print_console('Make some changes before saving into settings.', "QLabel { color : orange; }")
+            changes = self.compare_saved_settings()
+            if changes:
+                stg.save_to_json(changes)
+                self.print_console('New preferences saved!', "QLabel { color : green; }")
+            else:
+                self.print_console('Make some changes before saving into settings.', "QLabel { color : orange; }")
 
     def display_info(self):
         changes = self.compare_saved_settings()
@@ -105,6 +113,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             info = stg.load_preferences()
             self.pathroute.setText(info['search-path'])
             self.foldername_group.setText(info['group-files']['folder'])
+            self.actionMinimize.setChecked(info['system-tray'])
             for i in self.settingsBox.children():
                 if isinstance(i, QtWidgets.QCheckBox):
                     if i.text() in info['extensions'] or (i is self.checkGroup and info['group-files']['active']):
@@ -122,18 +131,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 for i in not_zero[1:]:
                     line += f" - {counter[i]} {i} file(s) found"
             # FIXME
+            # self.console_placeholder.setText(line)
             self.print_console(line)
 
     def print_console(self, text: str, style=None):
-        label = QtWidgets.QLabel(self.scrollContents)
-        label.setWordWrap(True)
-        label.setText(text)
+        last_label = QtWidgets.QLabel(self.scrollContents)
+        last_label.setWordWrap(True)
+        last_label.setText(text)
         if style:
-            label.setStyleSheet(style)
-        self.verticalLayout.addWidget(label)
+            last_label.setStyleSheet(style)
+        self.verticalLayout.addWidget(last_label)
+        # FIXME
         # self.verticalLayout.addStretch()
         # self.verticalLayout.insertWidget(self.verticalLayout.count() - 1, label)
-        # FIXME self.consoleScroll.ensureVisible(0, self.consoleScroll.height(), 0, 0)
+        # self.consoleScroll.ensureVisible(self.consoleScroll.width()-20, self.consoleScroll.height()-20, 0, 0)
 
     @staticmethod
     def open_browser(path: str):
