@@ -1,10 +1,10 @@
 from webbrowser import open as navigate
 import os.path
-import sys
+from sys import argv
 
 from GUI.mainwin_ui import *
 from GUI.tray import SystemTrayIcon
-from GUI.restore_alert import RestoreAlert
+from GUI.window_alerts import restore_alert, close_alert
 
 from managers.file_manager import FileManager
 import managers.settings as stg
@@ -27,7 +27,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.browser_searchPath.clicked.connect(self.pass_path)
 
         # MenuBar Actions
-        self.actionRestore_settings.triggered.connect(lambda: restore_alert.show())
+        self.actionRestore_settings.triggered.connect(lambda: restore_alert(self))
         self.actionOpen_route_folder.triggered.connect(lambda: self.open_browser(self.pathroute.text()))
         self.actionReport_bug.triggered.connect(
             lambda: self.open_browser(r"https://github.com/justkahdri/files_organizer/issues/new"))
@@ -36,7 +36,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.display_info()
 
         # Placeholders
-        # self.console_placeholder.close()
+        self.console_placeholder.close()
 
     def start_observer(self):
         if self.compare_saved_settings():
@@ -116,19 +116,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def files_found(self, counter):
         not_zero = [k for k in counter.keys() if counter[k] != 0]
-
         if not_zero:
             line = f"{counter[not_zero[0]]} {not_zero[0]} file(s) found"
             if len(not_zero) > 1:
                 for i in not_zero[1:]:
                     line += f" - {counter[i]} {i} file(s) found"
-            label = QtWidgets.QLabel()
-            label.setText(line)
-
-            self.verticalLayout.addWidget(label)
+            # FIXME
+            self.print_console(line)
 
     def print_console(self, text: str, style=None):
-        label = QtWidgets.QLabel()
+        label = QtWidgets.QLabel(self.scrollContents)
+        label.setWordWrap(True)
         label.setText(text)
         if style:
             label.setStyleSheet(style)
@@ -146,13 +144,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             event.ignore()
             self.hide()
             self.tray_icon.start()
+        elif self.robot:
+            close_alert(self, event)
         else:
-            sys.exit()
+            event.accept()
 
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication(argv)
     window = MainWindow()
-    restore_alert = RestoreAlert(parent=window)
     window.show()
     app.exec_()

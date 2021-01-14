@@ -10,5 +10,6 @@
         "Videos",
         "Documents"
     ],
-    "default-folders": true
+    "default-folders": true,
+    "system-tray": true
 }

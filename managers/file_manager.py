@@ -1,7 +1,6 @@
 import os
 from time import sleep
 from threading import Thread
-from PyQt5.QtWidgets import QLabel
 USER_PATH = os.environ['USERPROFILE']
 
 
